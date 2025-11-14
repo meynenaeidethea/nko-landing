@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Карта добрых дел — Главная</title>
+  <meta name="description" content="Интерактивная карта НКО и волонтерских инициирований в малых городах" />
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-sA+e2J4CkF3x4Jv6G4q2w0K1b0k1Wm2yXv0g6pG/0IM=" crossorigin=""/>
+
+  <style>
+    :root{
+      --rosatom-blue: #0060b4; /* основной цвет */
+      --rosatom-accent: #00a3e0;
+      --bg: #f6f8fb;
+      --card: #ffffff;
+      --muted: #666;
+    }
+    *{box-sizing:border-box}
+    body{font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; margin:0; background:var(--bg); color:#122;}
+    header{background:linear-gradient(90deg,var(--rosatom-blue),var(--rosatom-accent)); color:#fff; padding:18px 24px; display:flex; align-items:center; gap:16px}
+    .logo {display:flex; align-items:center; gap:12px}
+    .logo .mark{width:44px;height:44px;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--rosatom-blue);font-weight:700}
+    .container{max-width:1200px;margin:18px auto;padding:0 16px}
+    .top-controls{display:flex;gap:12px;align-items:center}
+
+    /* layout */
+    .main{display:grid;grid-template-columns:360px 1fr;gap:16px;margin-top:16px}
+    @media(max-width:900px){.main{grid-template-columns:1fr;}}
+
+    .panel{background:var(--card);border-radius:10px;padding:16px;box-shadow:0 6px 18px rgba(10,20,40,0.06)}
+    .map{height:72vh;border-radius:10px;overflow:hidden}
+    @media(max-width:900px){.map{height:50vh}}
+
+    /* controls */
+    label{font-size:13px;color:var(--muted)}
+    .input, select, button, textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid #e6eef7;background:#fff}
+    .search-row{display:flex;gap:8px;margin-bottom:12px}
+    .search-row .input{flex:1}
+    .btn{background:var(--rosatom-blue);color:#fff;border:none;padding:10px 12px;border-radius:8px;cursor:pointer}
+    .btn.secondary{background:#fff;color:var(--rosatom-blue);border:1px solid rgba(0,96,180,0.12)}
+
+    /* list of organizations */
+    .nko-list{margin-top:12px;display:flex;flex-direction:column;gap:8px;max-height:56vh;overflow:auto;padding-right:6px}
+    .nko-item{display:flex;gap:10px;align-items:flex-start;padding:10px;border-radius:8px;border:1px solid #eef6ff}
+    .nko-item img{width:56px;height:56px;object-fit:cover;border-radius:6px}
+    .nko-item h4{margin:0;font-size:15px}
+    .chip{display:inline-block;padding:4px 8px;background:#f0f7ff;border-radius:999px;font-size:12px;color:var(--rosatom-blue)}
+
+    footer{max-width:1200px;margin:16px auto;padding:12px 16px;color:#777}
+
+    /* modal */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.4);display:none;align-items:center;justify-content:center;padding:18px}
+    .modal{background:var(--card);border-radius:12px;max-width:720px;width:100%;padding:18px}
+    .modal .row{display:flex;gap:12px}
+    .tag{font-size:12px;color:#fff;background:var(--rosatom-accent);padding:6px 10px;border-radius:8px}
+
+    /* small helper */
+    .muted{color:var(--muted);font-size:13px}
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="container" style="display:flex;align-items:center;justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="logo">
+        <div class="mark">РД</div>
+        <div>
+          <div style="font-weight:700;font-size:16px">Карта добрых дел</div>
+          <div style="font-size:13px;opacity:0.9">НКО и инициативы малых городов</div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn secondary" id="btn-login">Войти</button>
+      <button class="btn" id="btn-add">Добавить НКО</button>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="main">
+    <!-- left panel -->
+    <aside class="panel">
+      <div class="top-controls">
+        <div style="flex:1">
+          <label>Поиск</label>
+          <div class="search-row">
+            <input class="input" id="search" placeholder="Найти НКО по названию" />
+            <button class="btn" id="search-btn">Искать</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:8px">
+        <label>Город</label>
+        <select id="city-select" style="margin-top:6px">
+          <option value="">Все города</option>
+        </select>
+      </div>
+
+      <div style="margin-top:12px">
+        <label>Категория</label>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px" id="category-list">
+          <!-- chips -->
+        </div>
+      </div>
+
+      <div style="margin-top:16px;display:flex;gap:8px">
+        <button class="btn" id="btn-reset">Сброс</button>
+        <button class="btn secondary" id="btn-show-list">Показать список</button>
+      </div>
+
+      <div class="nko-list" id="nko-list">
+        <!-- список организаций -->
+      </div>
+
+    </aside>
+
+    <!-- right: map -->
+    <section>
+      <div class="panel map" id="map"></div>
+      <div style="display:flex;gap:12px;margin-top:12px;align-items:center">
+        <div class="panel" style="flex:1">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div>
+              <div style="font-weight:700">Информация</div>
+              <div class="muted">Кликните на метку, чтобы открыть карточку НКО. Используйте фильтры для поиска.</div>
+            </div>
+            <div class="tag">Режим демо</div>
+          </div>
+        </div>
+        <div class="panel" style="width:220px">
+          <div style="font-weight:700">Подсказки</div>
+          <ul style="margin:8px 0 0 18px;padding:0;color:var(--muted)">
+            <li>Навигация: прокрутка мышью/тач для масштаба</li>
+            <li>Поиск по названию и фильтрация по городу/категории</li>
+            <li>Добавление НКО — после модерации</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<footer>
+  <div class="container">© Проект «Карта добрых дел» — демо-версия. Данные тестовые.</div>
+</footer>
+
+<!-- modal: NKO card -->
+<div class="modal-backdrop" id="modal-backdrop">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h3 id="modal-title">Название НКО</h3>
+      <button id="modal-close" class="btn secondary">Закрыть</button>
+    </div>
+    <div class="row" style="margin-top:12px;gap:16px">
+      <div style="flex:1">
+        <p id="modal-desc" class="muted">Краткое описание...</p>
+        <p style="margin-top:8px"><strong>Контакты:</strong> <span id="modal-phone">—</span></p>
+        <p><strong>Адрес:</strong> <span id="modal-address">—</span></p>
+        <p style="margin-top:8px"><a id="modal-site" href="#" target="_blank">Сайт / соцсеть</a></p>
+      </div>
+      <div style="width:160px;text-align:center">
+        <img id="modal-img" src="" alt="Логотип" style="width:120px;height:120px;object-fit:cover;border-radius:8px" />
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end">
+      <button id="modal-edit" class="btn secondary">Редактировать</button>
+      <button id="modal-close2" class="btn">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<!-- modal: auth/add -->
+<div class="modal-backdrop" id="modal-auth">
+  <div class="modal" role="dialog">
+    <h3 id="auth-title">Вход / регистрация</h3>
+    <p class="muted">Введите email для входа. Это демонстрационная авторизация.</p>
+    <div style="margin-top:8px">
+      <label>Email</label>
+      <input id="auth-email" class="input" placeholder="you@example.com" />
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn secondary" id="auth-cancel">Отмена</button>
+      <button class="btn" id="auth-submit">Войти</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal-add">
+  <div class="modal" role="dialog">
+    <h3>Добавить новую организацию</h3>
+    <p class="muted">Заполните форму, и запись попадёт в очередь модерации.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px">
+      <div>
+        <label>Название</label>
+        <input id="add-name" class="input" />
+      </div>
+      <div>
+        <label>Категория</label>
+        <input id="add-cat" class="input" />
+      </div>
+      <div style="grid-column:1/3">
+        <label>Краткое описание</label>
+        <textarea id="add-desc" class="input" rows="3"></textarea>
+      </div>
+      <div>
+        <label>Телефон</label>
+        <input id="add-phone" class="input" />
+      </div>
+      <div>
+        <label>Город</label>
+        <select id="add-city" class="input"></select>
+      </div>
+      <div style="grid-column:1/3;display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn secondary" id="add-cancel">Отмена</button>
+        <button class="btn" id="add-submit">Отправить на модерацию</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-o9N1j7k0k4kLQqYdH7B+QmQq+6Yp3o3w5Q+gGk3cM6o=" crossorigin=""></script>
+
+<script>
+// --- Данные: список городов и тестовые НКО ---
+const cities = [
+"Ангарск","Байкальск","Балаково","Билибино","Волгодонск","Глазов","Десногорск","Димитровград","Железногорск","ЗАТО Заречный","Заречный","Зеленогорск","Краснокаменск","Курчатов","Лесной","Неман","Нововоронеж","Новоуральск","Обнинск","Озерск","Певек","Полярные Зори","Саров","Северск","Снежинск","Советск","Сосновый Бор","Трехгорный","Удомля","Усолье-Сибирское","Электросталь","Энергодар"];
+
+const sampleNKO = [
+  {id:1,name:"Помощь детям",city:"Ангарск",cat:"Социальная помощь",lat:52.5369,lon:103.9368,phone:"+7 3842 12-34-56",desc:"Помогаем семьям с детьми",img:"https://picsum.photos/seed/a/200/200",site:"#"},
+  {id:2,name:"Чистый берег",city:"Балаково",cat:"Экология",lat:51.5381,lon:46.0245,phone:"+7 8453 98-76-54",desc:"Сбор и переработка мусора",img:"https://picsum.photos/seed/b/200/200",site:"#"},
+  {id:3,name:"Сердце города",city:"Нововоронеж",cat:"Культура",lat:51.2999,lon:39.2358,phone:"+7 4735 77-00-11",desc:"Творческие проекты и мероприятия",img:"https://picsum.photos/seed/c/200/200",site:"#"},
+  {id:4,name:"Волонтёры здоровья",city:"Обнинск",cat:"Медицина",lat:55.1252,lon:36.6117,phone:"+7 48439 2-33-44",desc:"Помощь пожилым и больным",img:"https://picsum.photos/seed/d/200/200",site:"#"},
+  {id:5,name:"Помоги лесу",city:"Зеленогорск",cat:"Экология",lat:56.1658,lon:92.4885,phone:"+7 391 55-66-77",desc:"Восстановление лесов",img:"https://picsum.photos/seed/e/200/200",site:"#"},
+  {id:6,name:"Клуб рукоделия",city:"Заречный",cat:"Культура",lat:55.0380,lon:60.4080,phone:"",desc:"Творческие мастер-классы",img:"https://picsum.photos/seed/f/200/200",site:"#"}
+];
+
+// --- инициализация карты ---
+const map = L.map('map', {center: [55.76, 37.64], zoom: 5, minZoom:2});
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution: '© OpenStreetMap'
+}).addTo(map);
+
+let markers = L.layerGroup().addTo(map);
+
+// populate city select
+const citySelect = document.getElementById('city-select');
+const addCity = document.getElementById('add-city');
+cities.forEach(c=>{
+  const o = document.createElement('option'); o.value=c; o.textContent=c; citySelect.appendChild(o);
+  if(addCity) { const o2 = document.createElement('option'); o2.value=c; o2.textContent=c; addCity.appendChild(o2); }
+});
+
+// populate categories
+const categories = Array.from(new Set(sampleNKO.map(n=>n.cat)));
+const catList = document.getElementById('category-list');
+categories.forEach(cat=>{
+  const b = document.createElement('button'); b.className='chip'; b.textContent=cat; b.dataset.cat=cat;
+  b.onclick = ()=>{
+    // toggle
+    b.classList.toggle('active');
+    if(b.classList.contains('active')) b.style.background='var(--rosatom-blue)'; else b.style.background='';
+    applyFilters();
+  }
+  catList.appendChild(b);
+});
+
+// render list and markers
+function renderList(items){
+  const list = document.getElementById('nko-list'); list.innerHTML='';
+  items.forEach(it=>{
+    const el = document.createElement('div'); el.className='nko-item';
+    el.innerHTML = `<img src="${it.img}" alt="${it.name}"><div style=flex:1><h4>${it.name}</h4><div class=muted>${it.city} · ${it.cat}</div><div style="margin-top:6px">${it.desc}</div></div>`;
+    el.onclick = ()=>{ openModal(it); map.setView([it.lat,it.lon],12); }
+    list.appendChild(el);
+  })
+}
+
+function renderMarkers(items){
+  markers.clearLayers();
+  items.forEach(it=>{
+    const m = L.marker([it.lat,it.lon]).addTo(markers);
+    m.bindPopup(`<b>${it.name}</b><br>${it.city} · ${it.cat}`);
+    m.on('click', ()=> openModal(it));
+  })
+}
+
+function applyFilters(){
+  const q = document.getElementById('search').value.trim().toLowerCase();
+  const city = citySelect.value;
+  const activeCats = Array.from(document.querySelectorAll('#category-list .chip.active')).map(b=>b.dataset.cat);
+  let res = sampleNKO.filter(n=>{
+    if(city && n.city!==city) return false;
+    if(activeCats.length && !activeCats.includes(n.cat)) return false;
+    if(q && !n.name.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  renderList(res);
+  renderMarkers(res);
+}
+
+// modal logic
+const modalBackdrop = document.getElementById('modal-backdrop');
+function openModal(item){
+  document.getElementById('modal-title').textContent = item.name;
+  document.getElementById('modal-desc').textContent = item.desc;
+  document.getElementById('modal-phone').textContent = item.phone || '—';
+  document.getElementById('modal-address').textContent = item.city;
+  const img = document.getElementById('modal-img'); img.src = item.img;
+  document.getElementById('modal-site').href = item.site || '#';
+  modalBackdrop.style.display = 'flex';
+}
+function closeModal(){ modalBackdrop.style.display='none'; }
+document.getElementById('modal-close').onclick = closeModal;
+document.getElementById('modal-close2').onclick = closeModal;
+
+// auth modal
+const authModal = document.getElementById('modal-auth');
+const addModal = document.getElementById('modal-add');
+let currentUser = localStorage.getItem('rd_user') || null;
+function openAuth(){ authModal.style.display='flex'; }
+function closeAuth(){ authModal.style.display='none'; }
+
+function openAdd(){
+  if(!currentUser){ openAuth(); return; }
+  addModal.style.display='flex';
+}
+
+function closeAdd(){ addModal.style.display='none'; }
+
+// login submit
+document.getElementById('btn-login').onclick = ()=> openAuth();
+document.getElementById('auth-cancel').onclick = closeAuth;
+document.getElementById('auth-submit').onclick = ()=>{
+  const email = document.getElementById('auth-email').value.trim();
+  if(!email){ alert('Введите email'); return; }
+  currentUser = email; localStorage.setItem('rd_user', email);
+  closeAuth(); alert('Вход выполнен как ' + email);
+}
+
+// add nko
+document.getElementById('btn-add').onclick = ()=> openAdd();
+document.getElementById('add-cancel').onclick = closeAdd;
+document.getElementById('add-submit').onclick = ()=>{
+  const name = document.getElementById('add-name').value.trim();
+  const cat = document.getElementById('add-cat').value.trim();
+  const desc = document.getElementById('add-desc').value.trim();
+  const phone = document.getElementById('add-phone').value.trim();
+  const city = document.getElementById('add-city').value;
+  if(!name || !cat || !city){ alert('Заполните название, категорию и город'); return; }
+  // push to moderation queue (mock)
+  console.log('Новая НКО на модерацию:', {name,cat,desc,phone,city});
+  closeAdd(); alert('Организация отправлена на модерацию. Администратор проверит запись.');
+}
+
+// search
+document.getElementById('search-btn').onclick = applyFilters;
+citySelect.onchange = applyFilters;
+document.getElementById('btn-reset').onclick = ()=>{ document.getElementById('search').value=''; citySelect.value=''; document.querySelectorAll('#category-list .chip').forEach(c=>{c.classList.remove('active'); c.style.background='';}); applyFilters(); }
+
+document.getElementById('btn-show-list').onclick = ()=>{
+  document.querySelector('#nko-list').scrollIntoView({behavior:'smooth'});
+}
+
+// init
+renderList(sampleNKO);
+renderMarkers(sampleNKO);
+
+// keyboard: close modals on ESC
+window.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeModal(); closeAuth(); closeAdd(); } });
+
+</script>
+</body>
+</html>
