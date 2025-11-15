@@ -55,49 +55,101 @@ rm -f backend/app.db
 find . -type d -name "__pycache__" -exec rm -rf {} +
 find . -type f -name "*.pyc" -delete
 ```
+## Задачи
 
-## 1. Installation
+### 1. Фронтенд UI/UX
 
-### 1.1 Create and activate virtual environment
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-```
+**Файлы:**
+- `frontend/index.html`
+- `frontend/login.html`
+- `frontend/register.html`
+- `frontend/styles.css`
+- `frontend/app.js`
+- `frontend/assets/*`
 
-### 1.2 Install dependencies
-```bash
-pip install -r requirements.txt
-```
+**Функциональность:**
+- Главный интерфейс сайта
+- Верстка шапки, меню, поиска, списка НКО
+- Форма добавления НКО
+- Модальные окна: логин, регистрация, карточка НКО
+- Адаптивность для мобильных устройств
+- JS для связи с бэкендом (fetch API)
+- Обработка вывода данных: список НКО, детали НКО
+- Базовые подсказки для пользователя
 
-## 2. Initialize database
-If old schema exists, remove it:
-```bash
-rm -f backend/app.db
-```
+### 2. Интеграция Яндекс.Карт
 
-Then populate seed data:
-```bash
-python -m backend.seed
-```
+**Файлы:**
+- `frontend/map.js`
+- `frontend/index.html` (подключение карты)
+- `frontend/assets/icons/markers/*`
 
-## 3. Run backend
-Always run Flask like this:
-```bash
-python -m backend.app
-```
+**Функциональность:**
+- Подключение JS API Яндекс.Карт
+- Создание карты с настройкой масштаба и центра
+- Добавление меток НКО на карту
+- Разные иконки для разных категорий
+- Функционал фильтрации меток
+- Всплывающие окна по клику на метку
+- Управление картой: переход в выбранный город
+- Обработка данных, полученных от API
 
-## 4. Run frontend
-```bash
-python3 -m http.server 8000 --bind 0.0.0.0 --directory frontend
-```
+### 3. Бэкенд (API + база данных)
 
-## 5. Stop services
-Press **Ctrl + C** in each terminal window.
+**Файлы:**
+- `backend/app.py`
+- `backend/models.py`
+- `backend/routes/organizations.py`
+- `backend/routes/auth.py` (совместно с участником 4)
+- `backend/utils/validators.py`
+- `backend/database.db`
+- `backend/config.py`
 
-## 6. Clean project
-```bash
-rm -rf .venv
-rm -f backend/app.db
-find . -type d -name "__pycache__" -exec rm -rf {} +
-find . -type f -name "*.pyc" -delete
-```
+**Функциональность:**
+- Создание базы данных SQLite
+- Реализация моделей SQLAlchemy:
+  - `users`
+  - `organizations`
+  - `pending_organizations`
+  - `categories`
+  - `cities`
+- API для фронтенда:
+  - `GET /api/get_organizations`
+  - `GET /api/get_cities`
+  - `POST /api/add_organization`
+  - `POST /api/update_organization`
+- Настройка сериализации JSON
+- Настройка CORS
+- Документирование API
+- Тестирование API в Postman
+
+### 4. Авторизация, роли и админка
+
+**Файлы:**
+- `frontend/admin.html`
+- `frontend/login.html`
+- `frontend/register.html`
+- `backend/routes/auth.py`
+- `backend/routes/admin.py`
+- `backend/utils/security.py`
+
+**Функциональность:**
+- Система авторизации (Flask-Login):
+  - Регистрация
+  - Вход
+  - Выход
+- Ограничение: один пользователь → одна НКО
+- Система ролей:
+  - Пользователь
+  - Администратор
+- Админ-панель:
+  - Просмотр заявок
+  - Одобрение/отклонение
+  - Редактирование НКО
+- API админки:
+  - `GET /api/admin/pending`
+  - `POST /api/admin/approve`
+  - `POST /api/admin/reject`
+  - `GET /api/admin/all`
+- Защита маршрутов
+- Интеграция админки с фронтендом через fetch
