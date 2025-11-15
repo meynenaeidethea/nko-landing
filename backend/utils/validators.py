@@ -1,5 +1,5 @@
-def validate_email(email):
+def validate_email(email: str) -> bool:
     return "@" in email and "." in email
 
-def validate_required(field):
-    return field is not None and field != ""
+def validate_required(value) -> bool:
+    return value is not None and value != ""

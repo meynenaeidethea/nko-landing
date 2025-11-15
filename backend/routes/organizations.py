@@ -3,7 +3,6 @@ from models import db, Organization
 
 org_bp = Blueprint('organizations', __name__)
 
-# Получить все организации
 @org_bp.route('/', methods=['GET'])
 def get_organizations():
     orgs = Organization.query.filter_by(approved=True).all()
@@ -19,7 +18,6 @@ def get_organizations():
         "social_links": o.social_links
     } for o in orgs])
 
-# Добавить организацию (через POST)
 @org_bp.route('/', methods=['POST'])
 def add_organization():
     data = request.json
@@ -32,7 +30,7 @@ def add_organization():
         address=data.get("address"),
         website=data.get("website"),
         social_links=data.get("social_links"),
-        approved=False  # сначала модерация
+        approved=False 
     )
     db.session.add(new_org)
     db.session.commit()

@@ -12,7 +12,8 @@ class Organization(db.Model):
     address = db.Column(db.String(200))
     website = db.Column(db.String(200))
     social_links = db.Column(db.String(500))
-    approved = db.Column(db.Boolean, default=False)  # для модерации
+    approved = db.Column(db.Boolean, default=False)
+
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
