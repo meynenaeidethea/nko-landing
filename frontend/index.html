@@ -6,9 +6,6 @@
   <title>Карта добрых дел — Главная</title>
   <meta name="description" content="Интерактивная карта НКО и волонтерских инициирований в малых городах" />
 
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-
   <style>
     :root{
       --rosatom-blue: #0060b4;
@@ -47,6 +44,7 @@
     .tag{font-size:12px;color:#fff;background:var(--rosatom-accent);padding:6px 10px;border-radius:8px}
     .muted{color:var(--muted);font-size:13px}
   </style>
+  <link rel="stylesheet" href="map.css">
 </head>
 <body>
 
@@ -105,7 +103,11 @@
     </aside>
 
     <section>
-      <div class="panel map" id="map"></div>
+      <div class="panel map" id="map" style="width: 100%; height: 400px;"></div>
+      <script src="https://api-maps.yandex.ru/2.1/?apikey=ваш API-ключ&lang=ru_RU"
+      type="text/javascript">
+      </script>
+      <script src="map.js"></script> <!-- подключаем карту -->
       <div style="display:flex;gap:12px;margin-top:12px;align-items:center">
         <div class="panel" style="flex:1">
           <div style="display:flex;align-items:center;justify-content:space-between">
@@ -207,9 +209,8 @@
   </div>
 </div>
 
-<!-- Leaflet JS -->
+<!-- Leaflet JS 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 <script>
 // --- Данные: список городов и тестовые НКО (fallback) ---
 const cities = [
@@ -222,7 +223,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '© OpenStreetMap'
 }).addTo(map);
 
-let markers = L.layerGroup().addTo(map);
+let markers = L.layerGroup().addTo(map); // нко слева снизу
 
 // populate city select
 const citySelect = document.getElementById('city-select');
@@ -408,5 +409,6 @@ if (!items || items.length === 0) {
 window.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeModal(); closeAuth(); closeAdd(); } });
 
 </script>
+-->
 </body>
 </html>
