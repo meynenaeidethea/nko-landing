@@ -7,11 +7,11 @@
   <meta name="description" content="Интерактивная карта НКО и волонтерских инициирований в малых городах" />
 
   <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-sA+e2J4CkF3x4Jv6G4q2w0K1b0k1Wm2yXv0g6pG/0IM=" crossorigin=""/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
   <style>
     :root{
-      --rosatom-blue: #0060b4; /* основной цвет */
+      --rosatom-blue: #0060b4;
       --rosatom-accent: #00a3e0;
       --bg: #f6f8fb;
       --card: #ffffff;
@@ -24,39 +24,27 @@
     .logo .mark{width:44px;height:44px;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--rosatom-blue);font-weight:700}
     .container{max-width:1200px;margin:18px auto;padding:0 16px}
     .top-controls{display:flex;gap:12px;align-items:center}
-
-    /* layout */
     .main{display:grid;grid-template-columns:360px 1fr;gap:16px;margin-top:16px}
     @media(max-width:900px){.main{grid-template-columns:1fr;}}
-
     .panel{background:var(--card);border-radius:10px;padding:16px;box-shadow:0 6px 18px rgba(10,20,40,0.06)}
     .map{height:72vh;border-radius:10px;overflow:hidden}
     @media(max-width:900px){.map{height:50vh}}
-
-    /* controls */
     label{font-size:13px;color:var(--muted)}
     .input, select, button, textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid #e6eef7;background:#fff}
     .search-row{display:flex;gap:8px;margin-bottom:12px}
     .search-row .input{flex:1}
     .btn{background:var(--rosatom-blue);color:#fff;border:none;padding:10px 12px;border-radius:8px;cursor:pointer}
     .btn.secondary{background:#fff;color:var(--rosatom-blue);border:1px solid rgba(0,96,180,0.12)}
-
-    /* list of organizations */
     .nko-list{margin-top:12px;display:flex;flex-direction:column;gap:8px;max-height:56vh;overflow:auto;padding-right:6px}
     .nko-item{display:flex;gap:10px;align-items:flex-start;padding:10px;border-radius:8px;border:1px solid #eef6ff}
     .nko-item img{width:56px;height:56px;object-fit:cover;border-radius:6px}
     .nko-item h4{margin:0;font-size:15px}
     .chip{display:inline-block;padding:4px 8px;background:#f0f7ff;border-radius:999px;font-size:12px;color:var(--rosatom-blue)}
-
     footer{max-width:1200px;margin:16px auto;padding:12px 16px;color:#777}
-
-    /* modal */
     .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.4);display:none;align-items:center;justify-content:center;padding:18px}
     .modal{background:var(--card);border-radius:12px;max-width:720px;width:100%;padding:18px}
     .modal .row{display:flex;gap:12px}
     .tag{font-size:12px;color:#fff;background:var(--rosatom-accent);padding:6px 10px;border-radius:8px}
-
-    /* small helper */
     .muted{color:var(--muted);font-size:13px}
   </style>
 </head>
@@ -82,7 +70,6 @@
 
 <div class="container">
   <div class="main">
-    <!-- left panel -->
     <aside class="panel">
       <div class="top-controls">
         <div style="flex:1">
@@ -104,7 +91,6 @@
       <div style="margin-top:12px">
         <label>Категория</label>
         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px" id="category-list">
-          <!-- chips -->
         </div>
       </div>
 
@@ -114,12 +100,10 @@
       </div>
 
       <div class="nko-list" id="nko-list">
-        <!-- список организаций -->
       </div>
 
     </aside>
 
-    <!-- right: map -->
     <section>
       <div class="panel map" id="map"></div>
       <div style="display:flex;gap:12px;margin-top:12px;align-items:center">
@@ -224,10 +208,10 @@
 </div>
 
 <!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-o9N1j7k0k4kLQqYdH7B+QmQq+6Yp3o3w5Q+gGk3cM6o=" crossorigin=""></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-// --- Данные: список городов и тестовые НКО ---
+// --- Данные: список городов и тестовые НКО (fallback) ---
 const cities = [
 "Ангарск","Байкальск","Балаково","Билибино","Волгодонск","Глазов","Десногорск","Димитровград","Железногорск","ЗАТО Заречный","Заречный","Зеленогорск","Краснокаменск","Курчатов","Лесной","Неман","Нововоронеж","Новоуральск","Обнинск","Озерск","Певек","Полярные Зори","Саров","Северск","Снежинск","Советск","Сосновый Бор","Трехгорный","Удомля","Усолье-Сибирское","Электросталь","Энергодар"];
 
@@ -258,26 +242,28 @@ cities.forEach(c=>{
 });
 
 // populate categories
-const categories = Array.from(new Set(sampleNKO.map(n=>n.cat)));
-const catList = document.getElementById('category-list');
-categories.forEach(cat=>{
-  const b = document.createElement('button'); b.className='chip'; b.textContent=cat; b.dataset.cat=cat;
-  b.onclick = ()=>{
-    // toggle
-    b.classList.toggle('active');
-    if(b.classList.contains('active')) b.style.background='var(--rosatom-blue)'; else b.style.background='';
-    applyFilters();
-  }
-  catList.appendChild(b);
-});
+function buildCategories(items){
+  const categories = Array.from(new Set(items.map(n=>n.cat)));
+  const catList = document.getElementById('category-list');
+  catList.innerHTML = '';
+  categories.forEach(cat=>{
+    const b = document.createElement('button'); b.className='chip'; b.textContent=cat; b.dataset.cat=cat;
+    b.onclick = ()=>{
+      b.classList.toggle('active');
+      if(b.classList.contains('active')) b.style.background='var(--rosatom-blue)'; else b.style.background='';
+      applyFilters();
+    }
+    catList.appendChild(b);
+  });
+}
 
 // render list and markers
 function renderList(items){
   const list = document.getElementById('nko-list'); list.innerHTML='';
   items.forEach(it=>{
     const el = document.createElement('div'); el.className='nko-item';
-    el.innerHTML = `<img src="${it.img}" alt="${it.name}"><div style=flex:1><h4>${it.name}</h4><div class=muted>${it.city} · ${it.cat}</div><div style="margin-top:6px">${it.desc}</div></div>`;
-    el.onclick = ()=>{ openModal(it); map.setView([it.lat,it.lon],12); }
+    el.innerHTML = `<img src="${it.img}" alt="${it.name}"><div style="flex:1"><h4>${it.name}</h4><div class="muted">${it.city} · ${it.cat}</div><div style="margin-top:6px">${it.desc}</div></div>`;
+    el.onclick = ()=>{ openModal(it); if(it.lat && it.lon) map.setView([it.lat,it.lon],12); }
     list.appendChild(el);
   })
 }
@@ -285,9 +271,11 @@ function renderList(items){
 function renderMarkers(items){
   markers.clearLayers();
   items.forEach(it=>{
-    const m = L.marker([it.lat,it.lon]).addTo(markers);
-    m.bindPopup(`<b>${it.name}</b><br>${it.city} · ${it.cat}`);
-    m.on('click', ()=> openModal(it));
+    if(it.lat && it.lon){
+      const m = L.marker([it.lat,it.lon]).addTo(markers);
+      m.bindPopup(`<b>${it.name}</b><br>${it.city} · ${it.cat}`);
+      m.on('click', ()=> openModal(it));
+    }
   })
 }
 
@@ -295,7 +283,7 @@ function applyFilters(){
   const q = document.getElementById('search').value.trim().toLowerCase();
   const city = citySelect.value;
   const activeCats = Array.from(document.querySelectorAll('#category-list .chip.active')).map(b=>b.dataset.cat);
-  let res = sampleNKO.filter(n=>{
+  let res = window._items.filter(n=>{
     if(city && n.city!==city) return false;
     if(activeCats.length && !activeCats.includes(n.cat)) return false;
     if(q && !n.name.toLowerCase().includes(q)) return false;
@@ -347,16 +335,34 @@ document.getElementById('auth-submit').onclick = ()=>{
 // add nko
 document.getElementById('btn-add').onclick = ()=> openAdd();
 document.getElementById('add-cancel').onclick = closeAdd;
-document.getElementById('add-submit').onclick = ()=>{
+document.getElementById('add-submit').onclick = async ()=>{
   const name = document.getElementById('add-name').value.trim();
   const cat = document.getElementById('add-cat').value.trim();
   const desc = document.getElementById('add-desc').value.trim();
   const phone = document.getElementById('add-phone').value.trim();
   const city = document.getElementById('add-city').value;
   if(!name || !cat || !city){ alert('Заполните название, категорию и город'); return; }
-  // push to moderation queue (mock)
-  console.log('Новая НКО на модерацию:', {name,cat,desc,phone,city});
-  closeAdd(); alert('Организация отправлена на модерацию. Администратор проверит запись.');
+
+  // Попробуем отправить на backend, если он доступен
+  try {
+    const payload = { name, category: cat, description: desc, phone, city };
+    const res = await fetch('/api/organizations/', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    if(res.ok){
+      closeAdd(); alert('Организация отправлена на модерацию. Администратор проверит запись.');
+      // обновить список
+      await initData();
+    } else {
+      const txt = await res.json();
+      throw new Error(JSON.stringify(txt));
+    }
+  } catch (err) {
+    console.warn('Ошибка отправки на backend, локальный mock используется:', err);
+    closeAdd(); alert('Организация отправлена на модерацию (локальный демо-мок).');
+  }
 }
 
 // search
@@ -364,13 +370,43 @@ document.getElementById('search-btn').onclick = applyFilters;
 citySelect.onchange = applyFilters;
 document.getElementById('btn-reset').onclick = ()=>{ document.getElementById('search').value=''; citySelect.value=''; document.querySelectorAll('#category-list .chip').forEach(c=>{c.classList.remove('active'); c.style.background='';}); applyFilters(); }
 
-document.getElementById('btn-show-list').onclick = ()=>{
-  document.querySelector('#nko-list').scrollIntoView({behavior:'smooth'});
+document.getElementById('btn-show-list').onclick = ()=>{ document.querySelector('#nko-list').scrollIntoView({behavior:'smooth'}); }
+
+// init loader: tries backend then fallback
+async function loadFromBackendOrDemo(){
+  try {
+    const res = await fetch('/api/organizations/');
+    if(!res.ok) throw new Error('no data');
+    const data = await res.json();
+    const mapped = data.map((o, i) => ({
+      id: o.id || i+1,
+      name: o.name,
+      city: o.city || '',
+      cat: o.category || o.cat || '',
+      lat: o.lat,
+      lon: o.lon,
+      phone: o.phone || '',
+      desc: o.description || '',
+      img: ('https://picsum.photos/seed/' + (o.id||i) + '/200/200'),
+      site: o.website || o.social_links || '#'
+    }));
+    return mapped;
+  } catch (err) {
+    console.warn('Backend not available or error fetching organizations, falling back to demo data.', err);
+    return sampleNKO;
+  }
+}
+
+async function initData(){
+  const items = await loadFromBackendOrDemo();
+  window._items = items;
+  buildCategories(items);
+  renderList(items);
+  renderMarkers(items);
 }
 
 // init
-renderList(sampleNKO);
-renderMarkers(sampleNKO);
+initData();
 
 // keyboard: close modals on ESC
 window.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeModal(); closeAuth(); closeAdd(); } });

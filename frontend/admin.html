@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Panel — Карта добрых дел</title>
+  <style>
+    body { font-family: Arial; background:#f1f4f8; padding:20px; }
+    h1 { color:#002e6d; }
+    .card {
+      background:#fff; padding:16px; border-radius:10px;
+      margin-bottom:16px; box-shadow:0 4px 12px rgba(0,0,0,0.1);
+    }
+    button {
+      background:#0060b4; color:#fff; padding:8px 16px;
+      border:none; border-radius:6px; cursor:pointer;
+    }
+    button:hover { background:#004b8a; }
+  </style>
+</head>
+<body>
+
+<h1>Админ-панель — ожидающие организации</h1>
+
+<div id="list"></div>
+
+<script>
+async function loadPending(){
+  try {
+    const r = await fetch('/api/admin/pending');
+    if(!r.ok) throw new Error('Нет данных');
+    const data = await r.json();
+    render(data);
+  } catch (e) {
+    document.getElementById('list').innerHTML = '<p>Не удалось загрузить список ожидания. Убедитесь, что backend запущен.</p>';
+  }
+}
+
+async function approve(id){
+  try {
+    const r = await fetch('/api/admin/approve/' + id, {method:'POST'});
+    if(!r.ok) {
+      const txt = await r.json();
+      alert('Ошибка: ' + JSON.stringify(txt));
+      return;
+    }
+    await loadPending();
+  } catch (e) {
+    alert('Ошибка при одобрении: ' + e.message);
+  }
+}
+
+function render(items){
+  const box = document.getElementById('list');
+  box.innerHTML = '';
+  if(items.length === 0){
+    box.innerHTML = "<p>Нет ожидающих организаций.</p>";
+    return;
+  }
+
+  items.forEach(o=>{
+    const c = document.createElement('div');
+    c.className = 'card';
+    c.innerHTML = `
+      <h3>${o.name}</h3>
+      <p><b>Город:</b> ${o.city || '-'}</p>
+      <p><b>Категория:</b> ${o.category || '-'}</p>
+      <p><b>Описание:</b> ${o.description || '-'}</p>
+      <button onclick="approve(${o.id})">Одобрить</button>
+    `;
+    box.appendChild(c);
+  });
+}
+
+loadPending();
+</script>
+
+</body>
+</html>

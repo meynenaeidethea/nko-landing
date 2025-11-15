@@ -12,6 +12,8 @@ class Organization(db.Model):
     address = db.Column(db.String(200))
     website = db.Column(db.String(200))
     social_links = db.Column(db.String(500))
+    lat = db.Column(db.Float, nullable=True)
+    lon = db.Column(db.Float, nullable=True)
     approved = db.Column(db.Boolean, default=False)
 
 

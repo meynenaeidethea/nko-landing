@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from models import db, Organization
+from backend.models import db, Organization
 
 org_bp = Blueprint('organizations', __name__)
 
@@ -15,14 +15,20 @@ def get_organizations():
         "phone": o.phone,
         "address": o.address,
         "website": o.website,
-        "social_links": o.social_links
+        "social_links": o.social_links,
+        "lat": o.lat,
+        "lon": o.lon
     } for o in orgs])
 
 @org_bp.route('/', methods=['POST'])
 def add_organization():
-    data = request.json
+    data = request.json or {}
+    name = data.get("name")
+    if not name:
+        return jsonify({"error": "Missing name"}), 400
+
     new_org = Organization(
-        name=data.get("name"),
+        name=name,
         city=data.get("city"),
         category=data.get("category"),
         description=data.get("description"),
@@ -30,7 +36,9 @@ def add_organization():
         address=data.get("address"),
         website=data.get("website"),
         social_links=data.get("social_links"),
-        approved=False 
+        lat=data.get("lat"),
+        lon=data.get("lon"),
+        approved=False
     )
     db.session.add(new_org)
     db.session.commit()
