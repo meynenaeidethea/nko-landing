@@ -215,15 +215,6 @@
 const cities = [
 "Ангарск","Байкальск","Балаково","Билибино","Волгодонск","Глазов","Десногорск","Димитровград","Железногорск","ЗАТО Заречный","Заречный","Зеленогорск","Краснокаменск","Курчатов","Лесной","Неман","Нововоронеж","Новоуральск","Обнинск","Озерск","Певек","Полярные Зори","Саров","Северск","Снежинск","Советск","Сосновый Бор","Трехгорный","Удомля","Усолье-Сибирское","Электросталь","Энергодар"];
 
-const sampleNKO = [
-  {id:1,name:"Помощь детям",city:"Ангарск",cat:"Социальная помощь",lat:52.5369,lon:103.9368,phone:"+7 3842 12-34-56",desc:"Помогаем семьям с детьми",img:"https://picsum.photos/seed/a/200/200",site:"#"},
-  {id:2,name:"Чистый берег",city:"Балаково",cat:"Экология",lat:51.5381,lon:46.0245,phone:"+7 8453 98-76-54",desc:"Сбор и переработка мусора",img:"https://picsum.photos/seed/b/200/200",site:"#"},
-  {id:3,name:"Сердце города",city:"Нововоронеж",cat:"Культура",lat:51.2999,lon:39.2358,phone:"+7 4735 77-00-11",desc:"Творческие проекты и мероприятия",img:"https://picsum.photos/seed/c/200/200",site:"#"},
-  {id:4,name:"Волонтёры здоровья",city:"Обнинск",cat:"Медицина",lat:55.1252,lon:36.6117,phone:"+7 48439 2-33-44",desc:"Помощь пожилым и больным",img:"https://picsum.photos/seed/d/200/200",site:"#"},
-  {id:5,name:"Помоги лесу",city:"Зеленогорск",cat:"Экология",lat:56.1658,lon:92.4885,phone:"+7 391 55-66-77",desc:"Восстановление лесов",img:"https://picsum.photos/seed/e/200/200",site:"#"},
-  {id:6,name:"Клуб рукоделия",city:"Заречный",cat:"Культура",lat:55.0380,lon:60.4080,phone:"",desc:"Творческие мастер-классы",img:"https://picsum.photos/seed/f/200/200",site:"#"}
-];
-
 // --- инициализация карты ---
 const map = L.map('map', {center: [55.76, 37.64], zoom: 5, minZoom:2});
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -392,8 +383,9 @@ async function loadFromBackendOrDemo(){
     }));
     return mapped;
   } catch (err) {
-    console.warn('Backend not available or error fetching organizations, falling back to demo data.', err);
-    return sampleNKO;
+    console.warn('Backend not available or error fetching organizations:', err);
+    // Возвращаем пустой массив — фронтенд покажет отсутствие данных.
+    return [];
   }
 }
 
@@ -407,6 +399,10 @@ async function initData(){
 
 // init
 initData();
+
+if (!items || items.length === 0) {
+  document.getElementById('nko-list').innerHTML = '<p class="muted">Данные отсутствуют. Убедитесь, что backend запущен.</p>';
+}
 
 // keyboard: close modals on ESC
 window.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeModal(); closeAuth(); closeAdd(); } });
