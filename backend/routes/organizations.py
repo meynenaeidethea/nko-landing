@@ -26,6 +26,11 @@ def get_organizations():
 @token_required
 def create_organization():
     try:
+        # Проверяем, есть ли у пользователя уже организация
+        existing_org = Organization.query.filter_by(user_id=request.current_user.id).first()
+        if existing_org:
+            return jsonify({'error': 'У вас уже есть организация. Один пользователь может добавить только одну организацию.'}), 400
+        
         data = request.get_json()
         
         org = Organization(

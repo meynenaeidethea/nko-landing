@@ -321,13 +321,13 @@ function renderMarkers(items) {
     window.location.href = 'login.html';
   }
   
-  function openAdd(){ 
-    if(!isAuthenticated()){ 
-      openAuth(); 
-      return; 
-    } 
-    if (addModal) addModal.style.display='flex'; 
-  }
+function openAdd(){ 
+  if(!isAuthenticated()){ 
+    window.location.href = 'login.html?redirect=add_organization.html';
+    return; 
+  } 
+  window.location.href = 'add_organization.html';
+}
   
   function closeAdd(){ if (addModal) addModal.style.display='none'; }
 

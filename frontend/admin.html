@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Админка</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body class="bg-light">
   <nav class="navbar navbar-dark bg-primary">
@@ -21,34 +21,89 @@
   </div>
 
 <script>
+// Функция для получения токена
+function getToken() {
+    return localStorage.getItem('jwt_token');
+}
+
+// Функция для авторизованных запросов
+async function authFetch(url, options = {}) {
+    const token = getToken();
+    if (token) {
+        options.headers = {
+            ...options.headers,
+            'Authorization': `Bearer ${token}`
+        };
+    }
+    return await fetch(url, options);
+}
+
 async function loadPending(){
   try {
-    const res = await fetch('/api/admin/pending');
+    const res = await authFetch('/api/admin/pending');
+    if (res.status === 401) {
+      document.getElementById('pending-list').innerHTML = '<div class="alert alert-danger">Необходима авторизация администратора</div>';
+      return;
+    }
+    if (res.status === 403) {
+      document.getElementById('pending-list').innerHTML = '<div class="alert alert-danger">Доступ запрещен. Только для администраторов</div>';
+      return;
+    }
+    
     const list = await res.json();
     const box = document.getElementById('pending-list');
-    if(!list.length){ box.innerHTML = '<div class="alert alert-info">Нет новых заявок</div>'; return; }
+    if(!list.length){ 
+      box.innerHTML = '<div class="alert alert-info">Нет новых заявок</div>'; 
+      return; 
+    }
     box.innerHTML = '';
     list.forEach(o => {
       const el = document.createElement('div');
-      el.className = 'card mb-2 p-2';
-      el.innerHTML = `<b>${o.name}</b><div class="text-muted">${o.city}</div>
-        <div class="mt-2">
+      el.className = 'card mb-3 p-3';
+      el.innerHTML = `
+        <h5>${o.name}</h5>
+        <div class="text-muted">${o.city} • ${o.category}</div>
+        <div class="mt-2"><strong>Описание:</strong> ${o.description}</div>
+        ${o.phone ? `<div><strong>Телефон:</strong> ${o.phone}</div>` : ''}
+        ${o.address ? `<div><strong>Адрес:</strong> ${o.address}</div>` : ''}
+        <div class="small mt-2 text-muted">Добавлено пользователем: ${o.user_email} (${o.user_name || 'без имени'})</div>
+        <div class="mt-3">
           <button class="btn btn-success btn-sm me-2" onclick="approve(${o.id})">Одобрить</button>
           <button class="btn btn-danger btn-sm" onclick="reject(${o.id})">Отклонить</button>
         </div>`;
       box.appendChild(el);
     });
-  } catch(e){ document.getElementById('pending-list').innerHTML = '<div class="alert alert-warning">Не удалось загрузить данные</div>'; }
+  } catch(e){ 
+    console.error('Ошибка:', e);
+    document.getElementById('pending-list').innerHTML = '<div class="alert alert-warning">Не удалось загрузить данные</div>'; 
+  }
 }
+
 async function approve(id){
-  await fetch(`/api/admin/approve/${id}`, {method:'POST'});
-  loadPending();
+  try {
+    await authFetch(`/api/admin/approve/${id}`, {method:'POST'});
+    loadPending();
+  } catch(e) {
+    alert('Ошибка при одобрении');
+  }
 }
+
 async function reject(id){
-  await fetch(`/api/admin/reject/${id}`, {method:'POST'});
+  try {
+    await authFetch(`/api/admin/reject/${id}`, {method:'POST'});
+    loadPending();
+  } catch(e) {
+    alert('Ошибка при отклонении');
+  }
+}
+
+// Проверяем авторизацию при загрузке
+const token = getToken();
+if (!token) {
+  document.getElementById('pending-list').innerHTML = '<div class="alert alert-danger">Необходимо войти в систему</div>';
+} else {
   loadPending();
 }
-loadPending();
 </script>
 </body>
 </html>
