@@ -1,0 +1,9 @@
+.map {
+    width: 500px;
+    height: 500px;
+    background-color: #9bc0ff;
+}
+
+[class*="copyrights-pane"] {
+  display: none !important;
+}
