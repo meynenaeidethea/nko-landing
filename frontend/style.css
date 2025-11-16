@@ -12,6 +12,99 @@ body {
   background: var(--bg);
   color: var(--text);
   margin: 0;
+
+  height: 100%;
+  margin: 0;
+  overflow: hidden; /* запретить прокрутку всей страницы */
+}
+
+/* 3) Высота основного контента: весь экран минус navbar */
+.content-wrapper {
+  height: calc(100vh - 64px); /* 64px — должна совпадать с .navbar */
+  margin: 0; /* избавляемся от my-4 */
+  padding-top: 1rem;  /* при необходимости */
+  padding-bottom: 1rem;
+  display: block;
+}
+
+/* 4) Заставляем row и колонки занимать всю доступную высоту */
+.row.full-height {
+  height: 100%;
+}
+
+/* Колонки */
+.row.full-height > aside,
+.row.full-height > main {
+  height: 100%;
+}
+
+/* 5) Карточки внутри колонок растягиваем по высоте,
+   чтобы aside и main выглядели как единое полотно */
+aside .card,
+main .card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 6) Разрешаем внутреннюю прокрутку колонок (если нужно),
+      но не прокрутку всей страницы */
+aside, main {
+  overflow: hidden; /* по умолчанию не прокручиваем */
+}
+aside .card-body,
+main .card { 
+  overflow: auto; /* содержимое карточек прокручивается внутри карточки */
+}
+
+aside .card-body {
+    display: flex;
+    flex-direction: column;
+    height: 100%;         /* обязательно */
+}
+
+aside .card-body .d-grid {
+    margin-top: auto;     /* прижать к низу */
+}
+
+/* 7) Для карты: пусть занимает всю высоту main .card */
+main .card #map {
+  height: 100%;
+  min-height: 0; /* важно: позволяет гибким контейнерам уменьшать высоту */
+}
+
+main .card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+#map {
+    flex: 1;
+    width: 100%;
+    min-height: 0; /* важно для корректного сжатия в flex-контейнере */
+}
+
+.row.full-height {
+    height: 100%;
+}
+
+main {
+    height: 100%;
+    overflow: hidden; /* карта не вылезает */
+    width: 100%;
+}
+
+main .card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+#map {
+    flex: 1;
+    width: 100%;
+    min-height: 0;
 }
 
 .navbar {
@@ -48,6 +141,18 @@ body {
   text-shadow: 1px 1px 3px rgba(0,0,0,0.25);
 }
 
+.content-wrapper.container {
+  max-width: 100%;
+  padding-right: 0 !important;
+}
+
+/* дополнительно убедиться, что main/card не добавляют отступы */
+.content-wrapper .row,
+.content-wrapper main,
+.content-wrapper main .card {
+  margin-right: 0;
+  padding-right: 5px;
+}
 
 .map {
   width: 100%;
