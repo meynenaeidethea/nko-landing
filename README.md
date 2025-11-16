@@ -51,10 +51,11 @@ pip install -r requirements.txt
 python -m backend.seed
 python -m backend.app
 # доступ по http://127.0.0.1:5000
-
+```
 
 ## Очистка
 
+```
 rm -rf .venv
 rm -f backend/app.db
 find . -type d -name "__pycache__" -exec rm -rf {} +
