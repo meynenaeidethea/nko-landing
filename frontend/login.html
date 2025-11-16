@@ -37,18 +37,22 @@ document.getElementById('auth-submit').onclick = async () => {
     if(res.ok){ 
       localStorage.setItem('jwt_token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
-      
-      // Проверяем параметр redirect в URL
-      const urlParams = new URLSearchParams(window.location.search);
-      const redirect = urlParams.get('redirect');
-      
-      if (redirect) {
-        window.location.href = redirect;
-      } else {
-        alert('Вход успешен'); 
-        window.location.href = 'index.html'; 
-      }
-    }
+  
+  // Проверяем параметр redirect в URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const redirect = urlParams.get('redirect');
+  
+  if (redirect) {
+    window.location.href = redirect;
+  } else if (data.user && data.user.is_admin) {
+    // Если пользователь админ - перенаправляем в админку
+    alert('Вход успешен (Администратор)'); 
+    window.location.href = 'admin.html'; 
+  } else {
+    alert('Вход успешен'); 
+    window.location.href = 'index.html'; 
+  }
+  }
     else alert(data.error || 'Ошибка входа');
   } catch(e){ alert('Не удалось связаться с сервером'); }
 };
