@@ -55,7 +55,7 @@ python -m backend.app
 
 ## Очистка
 
-```
+```bash
 rm -rf .venv
 rm -f backend/app.db
 find . -type d -name "__pycache__" -exec rm -rf {} +
