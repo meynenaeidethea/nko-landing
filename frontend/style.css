@@ -8,25 +8,35 @@
 
 
 body {
-  font-family: 'Poppins', Inter, system-ui, sans-serif;
+  font-family: "Jost", sans-serif;
   background: var(--bg);
   color: var(--text);
   margin: 0;
 }
 
-.navbar-brand span {
-  font-family: 'Poppins', 'Segoe UI', sans-serif;
-  font-weight: 700;
-  font-size: 1.8rem;      
-  letter-spacing: 1px;    
-  color: #1f2a91;           
+.navbar {
+    height: 70px;
 }
 
+.navbar-brand {
+    height: 60px;
+}
+
+.navbar-brand span {
+  font-family: "Nunito", sans-serif;   /* применяем Nunito */
+  font-weight: 700;
+  font-size: 1.9rem;
+  margin-left: 30%;                   /* увеличиваем отступ */
+  display: flex;
+  align-items: center;                 /* вертикальное центрирование */
+  justify-content: center;
+}
 
 .logo-img {
-  height: 40px;
-  width: 40px;
-  border-radius: 8px;
+  margin-left: 10%; 
+  height: 200%;
+  width: auto;
+  /* border-radius: 8px; */
   object-fit: contain;
 }
 

@@ -10,14 +10,19 @@
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Roboto+Slab:wght@100..900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="map.css">
 </head>
 <body class="bg-light">
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
   <div class="container">
     <a class="navbar-brand d-flex align-items-center gap-2" href="#">
-      <img src="assets/logo.png" alt="logo" class="logo-img">
+      <img src="assets/logo-rosatom-hor.png" alt="logo" class="logo-img">
       <span>Карта добрых дел</span>
     </a>
 
@@ -56,13 +61,21 @@
         </div>
       </div>
 
-      <div id="nko-list" class="list-group" aria-live="polite">
-      </div>
+      <!-- выпадающий список нко, надо доделать -->
+      <!-- 
+      <div id="nko-list" class="list-group" aria-live="polite">  
+      </div> 
+      -->
+      
     </aside>
 
     <main class="col-lg-8">
       <div class="card shadow-sm">
-        <div id="map" class="map rounded"></div>
+        <div id="map" style="width: 100%; height: 400px;"></div>
+        <script src="https://api-maps.yandex.ru/2.1/?apikey=ваш API-ключ&lang=ru_RU"
+        type="text/javascript">
+        </script>
+        <script src="map.js"></script> <!-- подключаем карту -->
       </div>
     </main>
   </div>
