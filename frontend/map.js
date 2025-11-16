@@ -1,5 +1,3 @@
-// map.js — Yandex Maps API v2.1
-
 const cities = [
   "Ангарск","Байкальск","Балаково","Билибино","Волгодонск","Глазов","Десногорск","Димитровград",
   "Железногорск","ЗАТО Заречный","Заречный","Зеленогорск","Краснокаменск","Курчатов","Лесной","Неман",
@@ -12,8 +10,66 @@ const DEFAULT_ZOOM = 5;
 const MARKER_ICON = 'assets/icons/marker.png';
 const MARKER_SIZE = [30, 30];
 
+// === JWT АВТОРИЗАЦИЯ ===
+// Функция для получения токена
+function getToken() {
+    return localStorage.getItem('jwt_token');
+}
+
+// Функция для проверки авторизации
+function isAuthenticated() {
+    return !!getToken();
+}
+
+// Функция для получения информации о пользователе
+function getUser() {
+    const userStr = localStorage.getItem('user');
+    return userStr ? JSON.parse(userStr) : null;
+}
+
+// Функция для выхода
+function logout() {
+    localStorage.removeItem('jwt_token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('rd_user'); // удаляем старый формат
+    window.location.href = 'index.html';
+}
+
+// Функция для авторизованных запросов
+async function authFetch(url, options = {}) {
+    const token = getToken();
+    if (token) {
+        options.headers = {
+            ...options.headers,
+            'Authorization': `Bearer ${token}`
+        };
+    }
+    return await fetch(url, options);
+}
+
+// Функция для проверки авторизации при загрузке
+function checkAuthStatus() {
+    const user = getUser();
+    const authButton = document.getElementById('btn-login');
+    
+    if (user && authButton) {
+        authButton.textContent = `Выйти (${user.first_name || user.email})`;
+        authButton.onclick = logout;
+        
+        // Показываем кнопку добавления, если пользователь авторизован
+        const addButton = document.getElementById('btn-add');
+        if (addButton) {
+            addButton.style.display = 'block';
+        }
+    }
+}
+// === КОНЕЦ JWT ФУНКЦИЙ ===
+
 // Ждём, пока DOM построится; затем запускаем инициализацию карты, когда готов ymaps
 document.addEventListener('DOMContentLoaded', () => {
+  // Проверяем авторизацию при загрузке
+  checkAuthStatus();
+  
   if (typeof ymaps === 'undefined') {
     console.warn('ymaps не загружен. Проверьте подключение https://api-maps.yandex.ru/2.1/');
     return;
@@ -258,27 +314,28 @@ function renderMarkers(items) {
   if (document.getElementById('modal-close')) document.getElementById('modal-close').onclick = closeModal;
   if (document.getElementById('modal-close2')) document.getElementById('modal-close2').onclick = closeModal;
 
-  // auth / add modal
-  const authModal = document.getElementById('modal-auth');
+    // auth / add modal
   const addModal = document.getElementById('modal-add');
-  let currentUser = localStorage.getItem('rd_user') || null;
-  function openAuth(){ if (authModal) authModal.style.display='flex'; }
-  function closeAuth(){ if (authModal) authModal.style.display='none'; }
-  function openAdd(){ if(!currentUser){ openAuth(); return; } if (addModal) addModal.style.display='flex'; }
+  
+  function openAuth(){ 
+    window.location.href = 'login.html';
+  }
+  
+  function openAdd(){ 
+    if(!isAuthenticated()){ 
+      openAuth(); 
+      return; 
+    } 
+    if (addModal) addModal.style.display='flex'; 
+  }
+  
   function closeAdd(){ if (addModal) addModal.style.display='none'; }
 
-  if (document.getElementById('btn-login')) document.getElementById('btn-login').onclick = () => openAuth();
-  if (document.getElementById('auth-cancel')) document.getElementById('auth-cancel').onclick = () => closeAuth();
-  if (document.getElementById('auth-submit')) document.getElementById('auth-submit').onclick = () => {
-    const emailInput = document.getElementById('auth-email');
-    const email = emailInput ? emailInput.value.trim() : '';
-    if (!email) { alert('Введите email'); return; }
-    currentUser = email; localStorage.setItem('rd_user', email);
-    closeAuth(); alert('Вход выполнен как ' + email);
-  };
+  if (document.getElementById('btn-login')) {
+    document.getElementById('btn-login').onclick = openAuth;
+  }
 
   if (document.getElementById('btn-add')) document.getElementById('btn-add').onclick = () => openAdd();
-  if (document.getElementById('add-cancel')) document.getElementById('add-cancel').onclick = () => closeAdd();
   if (document.getElementById('add-submit')) document.getElementById('add-submit').onclick = async () => {
     const name = (document.getElementById('add-name')?.value || '').trim();
     const cat = (document.getElementById('add-cat')?.value || '').trim();
@@ -289,23 +346,25 @@ function renderMarkers(items) {
 
     try {
       const payload = { name, category: cat, description: desc, phone, city };
-      const res = await fetch('/api/organizations/', {
+      const res = await authFetch('/api/organizations/', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(payload)
       });
+      
       if (res.ok) {
-        closeAdd(); alert('Организация отправлена на модерацию. Администратор проверит запись.');
+        closeAdd(); 
+        alert('Организация отправлена на модерацию. Администратор проверит запись.');
         await initDataReload();
       } else {
-        const txt = await res.json();
-        throw new Error(JSON.stringify(txt));
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Ошибка отправки');
       }
     } catch (err) {
-      console.warn('Ошибка отправки на backend, локальный mock используется:', err);
-      closeAdd(); alert('Организация отправлена на модерацию (локальный демо-мок).');
+      console.error('Ошибка отправки организации:', err);
+      alert('Ошибка: ' + err.message);
     }
-  };
+  }
 
   if (document.getElementById('search-btn')) document.getElementById('search-btn').onclick = applyFilters;
   if (citySelect) citySelect.onchange = applyFilters;
@@ -329,7 +388,7 @@ function renderMarkers(items) {
 
   async function loadFromBackendOrDemo() {
     try {
-      const res = await fetch('/api/organizations/');
+      const res = await authFetch('/api/organizations/');
       if (!res.ok) throw new Error('no data');
       const data = await res.json();
       const mapped = data.map((o, i) => ({

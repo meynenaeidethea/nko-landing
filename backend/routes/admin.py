@@ -1,25 +1,33 @@
-from flask import Blueprint, jsonify
-from backend.models import db, Organization
+from flask import Blueprint, request, jsonify
+from backend.models import Organization, db
+from backend.utils.jwt_utils import admin_required
 
-admin_bp = Blueprint("admin", __name__)
+admin_bp = Blueprint('admin', __name__)
 
-@admin_bp.route("/pending", methods=["GET"])
-def pending():
-    orgs = Organization.query.filter_by(approved=False).all()
+@admin_bp.route('/pending', methods=['GET'])
+@admin_required
+def get_pending_organizations():
+    pending_orgs = Organization.query.filter_by(approved=False).all()
+    return jsonify([{
+        'id': org.id,
+        'name': org.name,
+        'city': org.city,
+        'category': org.category,
+        'description': org.description
+    } for org in pending_orgs])
 
-    return jsonify([
-        {"id": o.id, "name": o.name, "city": o.city}
-        for o in orgs
-    ])
-
-@admin_bp.route("/approve/<int:id>", methods=["POST"])
-def approve(id):
-    org = Organization.query.get(id)
-
-    if not org:
-        return jsonify({"error": "Organization not found"}), 404
-
+@admin_bp.route('/approve/<int:org_id>', methods=['POST'])
+@admin_required
+def approve_organization(org_id):
+    org = Organization.query.get_or_404(org_id)
     org.approved = True
     db.session.commit()
+    return jsonify({'message': 'Organization approved'})
 
-    return jsonify({"message": "Organization approved"})
+@admin_bp.route('/reject/<int:org_id>', methods=['POST'])
+@admin_required
+def reject_organization(org_id):
+    org = Organization.query.get_or_404(org_id)
+    db.session.delete(org)
+    db.session.commit()
+    return jsonify({'message': 'Organization rejected'})

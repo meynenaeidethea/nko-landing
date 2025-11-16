@@ -31,12 +31,17 @@ document.getElementById('reg-submit').onclick = async () => {
   if(pass !== pass2){ alert('Пароли не совпадают'); return; }
   try {
     const res = await fetch('/api/auth/register', {
-      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email, password: pass})
+      method:'POST', 
+      headers:{'Content-Type':'application/json'}, 
+      body: JSON.stringify({email, password: pass})
     });
     const data = await res.json();
-    if(res.ok){ alert('Регистрация успешна'); window.location.href='login.html'; }
+    if(res.ok){ 
+      alert('Регистрация успешна'); 
+      window.location.href='login.html'; 
+    }
     else alert(data.error || 'Ошибка регистрации');
-  } catch(e){ alert('Не удалось связаться с сервером (демо)'); window.location.href='login.html'; }
+  } catch(e){ alert('Не удалось связаться с сервером'); }
 };
 </script>
 </body>

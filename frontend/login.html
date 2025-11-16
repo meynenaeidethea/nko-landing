@@ -34,9 +34,14 @@ document.getElementById('auth-submit').onclick = async () => {
       body: JSON.stringify({email, password})
     });
     const data = await res.json();
-    if(res.ok){ localStorage.setItem('rd_user', data.user_id || email); alert('Вход успешен'); window.location.href = 'index.html'; }
+    if(res.ok){ 
+      localStorage.setItem('jwt_token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      alert('Вход успешен'); 
+      window.location.href = 'index.html'; 
+    }
     else alert(data.error || 'Ошибка входа');
-  } catch(e){ alert('Не удалось связаться с сервером (демо режим)'); localStorage.setItem('rd_user', email); window.location.href = 'index.html'; }
+  } catch(e){ alert('Не удалось связаться с сервером'); }
 };
 </script>
 </body>
