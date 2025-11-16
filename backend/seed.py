@@ -121,7 +121,7 @@ with app.app_context():
     admin_email = "admin@example.com"
     if User.query.filter_by(email=admin_email).first() is None:
         print("Создаём админа admin@example.com / password")
-        admin = User(email=admin_email, password=generate_password_hash("password"), is_admin=True)
+        admin = User(email=admin_email, password_hash=generate_password_hash("password"), is_admin=True)
         db.session.add(admin)
     else:
         print("Админ уже существует.")
