@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Добавить НКО — Карта добрых дел</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="bg-light">
+  <nav class="navbar navbar-dark bg-primary">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">← Назад к карте</a>
+    </div>
+  </nav>
+
+  <div class="container my-4">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="card shadow-sm">
+          <div class="card-header">
+            <h4 class="mb-0">Добавить новую организацию</h4>
+          </div>
+          <div class="card-body">
+            <form id="add-org-form">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">Название организации *</label>
+                  <input id="org-name" class="form-control" required />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Категория *</label>
+                  <select id="org-category" class="form-select" required>
+                    <option value="">Выберите категорию</option>
+                    <option value="Социальная помощь">Социальная помощь</option>
+                    <option value="Экология">Экология</option>
+                    <option value="Культура">Культура</option>
+                    <option value="Медицина">Медицина</option>
+                    <option value="Образование">Образование</option>
+                    <option value="Спорт">Спорт</option>
+                    <option value="Животные">Помощь животным</option>
+                    <option value="Другое">Другое</option>
+                  </select>
+                </div>
+                
+                <div class="col-12">
+                  <label class="form-label">Краткое описание деятельности *</label>
+                  <textarea id="org-description" class="form-control" rows="3" 
+                            placeholder="2-3 предложения о деятельности организации и возможностях для волонтеров" 
+                            required></textarea>
+                </div>
+                
+                <div class="col-md-6">
+                  <label class="form-label">Город *</label>
+                  <select id="org-city" class="form-select" required>
+                    <option value="">Выберите город</option>
+                  </select>
+                </div>
+                
+                <div class="col-md-6">
+                  <label class="form-label">Контактный телефон</label>
+                  <input id="org-phone" class="form-control" type="tel" />
+                </div>
+                
+                <div class="col-12">
+                  <label class="form-label">Адрес</label>
+                  <input id="org-address" class="form-control" placeholder="Улица, дом" />
+                </div>
+                
+                <div class="col-md-6">
+                  <label class="form-label">Сайт</label>
+                  <input id="org-website" class="form-control" type="url" placeholder="https://..." />
+                </div>
+                
+                <div class="col-md-6">
+                  <label class="form-label">Социальные сети</label>
+                  <input id="org-social" class="form-control" placeholder="Ссылки на соцсети" />
+                </div>
+                
+                <div class="col-md-6">
+                  <label class="form-label">Широта (координаты)</label>
+                  <input id="org-lat" class="form-control" type="number" step="any" />
+                </div>
+                
+                <div class="col-md-6">
+                  <label class="form-label">Долгота (координаты)</label>
+                  <input id="org-lon" class="form-control" type="number" step="any" />
+                </div>
+              </div>
+              
+              <div class="mt-4">
+                <div class="form-text">
+                  * — обязательные для заполнения поля. После отправки заявка будет проверена модератором.
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="card-footer">
+            <button id="submit-btn" class="btn btn-primary">Отправить на модерацию</button>
+            <a href="index.html" class="btn btn-outline-secondary ms-2">Отмена</a>
+          </div>
+        </div>
+        
+        <!-- Блок для отображения существующей организации -->
+        <div id="existing-org-alert" class="alert alert-info mt-4" style="display: none;">
+          <h5>У вас уже есть организация</h5>
+          <p id="existing-org-info"></p>
+          <a href="index.html" class="btn btn-outline-primary">Вернуться к карте</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Список городов
+    const cities = [
+      "Ангарск","Байкальск","Балаково","Билибино","Волгодонск","Глазов","Десногорск","Димитровград",
+      "Железногорск","ЗАТО Заречный","Заречный","Зеленогорск","Краснокаменск","Курчатов","Лесной","Неман",
+      "Нововоронеж","Новоуральск","Обнинск","Озерск","Певек","Полярные Зори","Саров","Северск","Снежинск",
+      "Советск","Сосновый Бор","Трехгорный","Удомля","Усолье-Сибирское","Электросталь","Энергодар"
+    ];
+
+    // Заполняем список городов
+    const citySelect = document.getElementById('org-city');
+    cities.forEach(city => {
+      const option = document.createElement('option');
+      option.value = city;
+      option.textContent = city;
+      citySelect.appendChild(option);
+    });
+
+    // Проверяем авторизацию и существующую организацию
+    async function checkAuthAndExistingOrg() {
+      const token = localStorage.getItem('jwt_token');
+      
+      if (!token) {
+        // Не авторизован - перенаправляем на регистрацию
+        alert('Для добавления организации необходимо войти в систему');
+        window.location.href = 'login.html?redirect=add_organization.html';
+        return;
+      }
+
+      try {
+        // Проверяем, есть ли у пользователя уже организация
+        const res = await fetch('/api/organizations/my', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (res.ok) {
+          const myOrgs = await res.json();
+          if (myOrgs.length > 0) {
+            // У пользователя уже есть организация
+            const existingOrg = myOrgs[0];
+            document.getElementById('add-org-form').style.display = 'none';
+            document.getElementById('existing-org-alert').style.display = 'block';
+            document.getElementById('existing-org-info').textContent = 
+              `Название: ${existingOrg.name}, Город: ${existingOrg.city}, Статус: ${existingOrg.approved ? 'Одобрена' : 'На модерации'}`;
+            return;
+          }
+        }
+      } catch (error) {
+        console.error('Ошибка при проверке организаций:', error);
+      }
+    }
+
+    // Обработчик отправки формы
+    document.getElementById('submit-btn').onclick = async () => {
+      const form = document.getElementById('add-org-form');
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      const token = localStorage.getItem('jwt_token');
+      if (!token) {
+        alert('Сессия истекла. Пожалуйста, войдите снова.');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      const orgData = {
+        name: document.getElementById('org-name').value.trim(),
+        category: document.getElementById('org-category').value,
+        description: document.getElementById('org-description').value.trim(),
+        city: document.getElementById('org-city').value,
+        phone: document.getElementById('org-phone').value.trim(),
+        address: document.getElementById('org-address').value.trim(),
+        website: document.getElementById('org-website').value.trim(),
+        social_links: document.getElementById('org-social').value.trim(),
+        lat: document.getElementById('org-lat').value ? parseFloat(document.getElementById('org-lat').value) : null,
+        lon: document.getElementById('org-lon').value ? parseFloat(document.getElementById('org-lon').value) : null
+      };
+
+      try {
+        const res = await fetch('/api/organizations/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(orgData)
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          alert('Организация успешно отправлена на модерацию! Администратор проверит вашу заявку.');
+          window.location.href = 'index.html';
+        } else {
+          alert('Ошибка: ' + (data.error || 'Не удалось отправить заявку'));
+        }
+      } catch (error) {
+        console.error('Ошибка:', error);
+        alert('Не удалось отправить заявку. Проверьте подключение к интернету.');
+      }
+    };
+
+    // Проверяем при загрузке страницы
+    checkAuthAndExistingOrg();
+  </script>
+</body>
+</html>

@@ -37,8 +37,17 @@ document.getElementById('auth-submit').onclick = async () => {
     if(res.ok){ 
       localStorage.setItem('jwt_token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
-      alert('Вход успешен'); 
-      window.location.href = 'index.html'; 
+      
+      // Проверяем параметр redirect в URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirect = urlParams.get('redirect');
+      
+      if (redirect) {
+        window.location.href = redirect;
+      } else {
+        alert('Вход успешен'); 
+        window.location.href = 'index.html'; 
+      }
     }
     else alert(data.error || 'Ошибка входа');
   } catch(e){ alert('Не удалось связаться с сервером'); }

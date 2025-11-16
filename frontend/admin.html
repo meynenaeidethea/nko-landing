@@ -31,11 +31,13 @@ async function loadPending(){
     list.forEach(o => {
       const el = document.createElement('div');
       el.className = 'card mb-2 p-2';
-      el.innerHTML = `<b>${o.name}</b><div class="text-muted">${o.city}</div>
-        <div class="mt-2">
-          <button class="btn btn-success btn-sm me-2" onclick="approve(${o.id})">Одобрить</button>
-          <button class="btn btn-danger btn-sm" onclick="reject(${o.id})">Отклонить</button>
-        </div>`;
+      el.innerHTML = `<b>${o.name}</b>
+  <div class="text-muted">${o.city} • ${o.category}</div>
+  <div class="small">Добавлено пользователем: ${o.user_email || 'Неизвестно'}</div>
+  <div class="mt-2">
+    <button class="btn btn-success btn-sm me-2" onclick="approve(${o.id})">Одобрить</button>
+    <button class="btn btn-danger btn-sm" onclick="reject(${o.id})">Отклонить</button>
+  </div>`;
       box.appendChild(el);
     });
   } catch(e){ document.getElementById('pending-list').innerHTML = '<div class="alert alert-warning">Не удалось загрузить данные</div>'; }
