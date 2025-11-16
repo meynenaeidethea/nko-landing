@@ -42,6 +42,8 @@ project/
 
 ## 0. Start project and cleaning (подробнее каждые действия расписаны ниже)
 
+## Запуск
+
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
@@ -49,6 +51,9 @@ pip install -r requirements.txt
 python -m backend.seed
 python -m backend.app
 # доступ по http://127.0.0.1:5000
+
+
+## Очистка
 
 rm -rf .venv
 rm -f backend/app.db
