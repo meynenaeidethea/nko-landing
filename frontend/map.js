@@ -28,13 +28,15 @@ function getUser() {
 }
 
 // Функция для выхода
+// Функция для выхода
+// Функция для выхода
 function logout() {
     localStorage.removeItem('jwt_token');
     localStorage.removeItem('user');
     localStorage.removeItem('rd_user'); // удаляем старый формат
+    alert('Вы вышли из системы');
     window.location.href = 'index.html';
 }
-
 // Функция для авторизованных запросов
 async function authFetch(url, options = {}) {
     const token = getToken();
@@ -48,19 +50,41 @@ async function authFetch(url, options = {}) {
 }
 
 // Функция для проверки авторизации при загрузке
+// Функция для проверки авторизации при загрузке
+// Функция для проверки авторизации при загрузке
+// Функция для проверки авторизации при загрузке
 function checkAuthStatus() {
     const user = getUser();
     const authButton = document.getElementById('btn-login');
+    const addButton = document.getElementById('btn-add');
+    const adminButton = document.getElementById('btn-admin');
+    const logoutButton = document.getElementById('btn-logout');
     
-    if (user && authButton) {
-        authButton.textContent = `Выйти (${user.first_name || user.email})`;
-        authButton.onclick = logout;
-        
-        // Показываем кнопку добавления, если пользователь авторизован
-        const addButton = document.getElementById('btn-add');
-        if (addButton) {
-            addButton.style.display = 'block';
+    if (user) {
+        // Авторизован - показываем "Добавить НКО" и "Выйти"
+        if (authButton) authButton.style.display = 'none';
+        if (addButton) addButton.style.display = 'block';
+        if (logoutButton) {
+            logoutButton.style.display = 'block';
+            logoutButton.textContent = `Выйти (${user.first_name || user.email})`;
+            logoutButton.onclick = logout;
         }
+        
+        // Если пользователь админ - показываем кнопку админки
+        if (adminButton && user.is_admin) {
+            adminButton.style.display = 'block';
+            adminButton.onclick = () => {
+                window.location.href = 'admin.html';
+            };
+        } else if (adminButton) {
+            adminButton.style.display = 'none';
+        }
+    } else {
+        // Не авторизован - показываем только "Войти"
+        if (authButton) authButton.style.display = 'block';
+        if (addButton) addButton.style.display = 'none';
+        if (adminButton) adminButton.style.display = 'none';
+        if (logoutButton) logoutButton.style.display = 'none';
     }
 }
 // === КОНЕЦ JWT ФУНКЦИЙ ===
