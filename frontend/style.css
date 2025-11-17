@@ -153,6 +153,14 @@ main .card {
   transform: translate(-50%, -50%);
 }
 
+/* заголовок — по центру всей шапки (страницы без сайдбара/карты) */
+.title-center-page {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
 .logo-img {
   height: 112px;
   width: auto;
