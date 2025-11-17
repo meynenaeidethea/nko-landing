@@ -119,17 +119,13 @@ main .card {
   font-family: "Nunito", sans-serif;   /* применяем Nunito */
   font-weight: 700;
   font-size: 1.9rem;
-  margin-left: 30%;                   /* увеличиваем отступ */
   display: flex;
   align-items: center;                 /* вертикальное центрирование */
-  justify-content: center;
 }
 
 .logo-img {
-  margin-left: 10%; 
-  height: 200%;
+  height: 42px;
   width: auto;
-  /* border-radius: 8px; */
   object-fit: contain;
 }
 
