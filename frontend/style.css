@@ -111,20 +111,45 @@ main .card {
     height: 70px;
 }
 
+/* тот же бокс, что у .content-wrapper.container ниже — чтобы шапка была
+   выровнена по тем же левому/правому краям, что и сайдбар/карта */
+.navbar > .container {
+  max-width: 100%;
+  padding-right: 0 !important;
+  height: 100%;
+  position: relative;
+}
+
 .navbar-brand {
     height: 60px;
 }
 
-.navbar-brand span {
+.mapKind {
   font-family: "Nunito", sans-serif;   /* применяем Nunito */
   font-weight: 700;
   font-size: 1.9rem;
-  display: flex;
-  align-items: center;                 /* вертикальное центрирование */
+  color: #fff;
+  white-space: nowrap;
+}
+
+/* лого — по центру первой трети контейнера (над сайдбаром) */
+.brand-first-third {
+  position: absolute;
+  top: 50%;
+  left: 16.6667%;
+  transform: translate(-50%, -50%);
+}
+
+/* заголовок — по центру всего контейнера */
+.title-centered {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .logo-img {
-  height: 42px;
+  height: 56px;
   width: auto;
   object-fit: contain;
 }
