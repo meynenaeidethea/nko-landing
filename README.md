@@ -1,46 +1,41 @@
-# hackathon_14-16.11.2025
+# Карта добрых дел
 
-ТЗ: https://drive.google.com/drive/folders/1LFTxVDUg-0xxDlET4ickldVZQQrTvZyA
+Интерактивная карта НКО и волонтёрских инициатив: пользователи ищут организации по городу и категории на карте, могут предложить новую НКО, а администраторы модерируют заявки.
 
-!!! Делать в отдельной ветке, сливать через PR
+Изначально проект делался на хакатоне, сейчас доведён до презентабельного состояния как публичный pet-проект.
+
+## Стек
+
+- **Backend:** Python, Flask, Flask-SQLAlchemy, Flask-CORS, JWT-авторизация (PyJWT), SQLite
+- **Frontend:** статические HTML-страницы, Bootstrap 5, Яндекс.Карты (JS API), vanilla JS
 
 ## Структура проекта
+
 ```
-project/
- ├── backend/
- │   ├── app.py
- │   ├── models.py
- │   ├── config.py
- │   ├── database.db
- │   ├── requirements.txt
- │   ├── routes/
- │   │   ├── auth.py
- │   │   ├── organizations.py
- │   │   ├── admin.py
- │   │   └── __init__.py
- │   └── utils/
- │       ├── validators.py
- │       ├── security.py
- │       └── __init__.py
- │
- ├── frontend/
- │   ├── index.html
- │   ├── admin.html
- │   ├── login.html
- │   ├── register.html
- │   ├── styles.css
- │   ├── app.js
- │   ├── map.js
- │   └── assets/
- │       ├── logo.png
- │       └── icons/
- ├── README.md
+.
+├── backend/
+│   ├── app.py            # фабрика приложения, регистрация роутов
+│   ├── models.py          # модели SQLAlchemy (User, Organization, ...)
+│   ├── config.py           # конфигурация Flask/JWT
+│   ├── seed.py             # наполнение БД тестовыми данными
+│   ├── routes/
+│   │   ├── auth.py          # /api/auth — регистрация, вход, /me
+│   │   ├── organizations.py # /api/organizations — список, создание, "мои"
+│   │   └── admin.py         # /api/admin — модерация заявок
+│   └── utils/
+│       ├── validators.py
+│       ├── security.py
+│       └── jwt_utils.py
+├── frontend/
+│   ├── index.html          # главная карта
+│   ├── login.html / register.html
+│   ├── admin.html          # админ-панель модерации
+│   ├── add_organization.html
+│   ├── style.css / map.css
+│   ├── map.js               # интеграция Яндекс.Карт
+│   └── assets/
+└── requirements.txt
 ```
-
-
-# Project: Backend + Frontend (WSL + Windows)
-
-## 0. Start project and cleaning (подробнее каждые действия расписаны ниже)
 
 ## Запуск
 
@@ -48,114 +43,43 @@ project/
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-python -m backend.seed
+python -m backend.seed     # создаёт БД и наполняет тестовыми НКО + админом
 python -m backend.app
-# доступ по http://127.0.0.1:5000
+# бэкенд поднимется на http://127.0.0.1:5000
 ```
 
-## Очистка
+Фронтенд — статические файлы в `frontend/`, backend отдаёт их через `send_from_directory` (см. `backend/app.py`), поэтому после `python -m backend.app` сайт доступен по тому же адресу.
+
+Для работы карты нужен свой ключ Яндекс.Карт JS API: подставьте его вместо `ваш API-ключ` в `frontend/index.html` (строка с `api-maps.yandex.ru`).
+
+После `python -m backend.seed` доступен тестовый администратор:
+
+```
+email:    admin@example.com
+password: password
+```
+
+Это dev-заглушка для локальной проверки админки — не использовать в проде.
+
+## Очистка окружения
 
 ```bash
 rm -rf .venv
-rm -f backend/app.db
+rm -f backend/database.db
 find . -type d -name "__pycache__" -exec rm -rf {} +
 find . -type f -name "*.pyc" -delete
 ```
-## Задачи
 
-### 1. Фронтенд UI/UX
+## Основные API-эндпоинты
 
-**Файлы:**
-- `frontend/index.html`
-- `frontend/login.html`
-- `frontend/register.html`
-- `frontend/styles.css`
-- `frontend/app.js`
-- `frontend/assets/*`
-
-**Функциональность:**
-- Главный интерфейс сайта
-- Верстка шапки, меню, поиска, списка НКО
-- Форма добавления НКО
-- Модальные окна: логин, регистрация, карточка НКО
-- Адаптивность для мобильных устройств
-- JS для связи с бэкендом (fetch API)
-- Обработка вывода данных: список НКО, детали НКО
-- Базовые подсказки для пользователя
-
-### 2. Интеграция Яндекс.Карт
-
-**Файлы:**
-- `frontend/map.js`
-- `frontend/index.html` (подключение карты)
-- `frontend/assets/icons/markers/*`
-
-**Функциональность:**
-- Подключение JS API Яндекс.Карт
-- Создание карты с настройкой масштаба и центра
-- Добавление меток НКО на карту
-- Разные иконки для разных категорий
-- Функционал фильтрации меток
-- Всплывающие окна по клику на метку
-- Управление картой: переход в выбранный город
-- Обработка данных, полученных от API
-
-### 3. Бэкенд (API + база данных)
-
-**Файлы:**
-- `backend/app.py`
-- `backend/models.py`
-- `backend/routes/organizations.py`
-- `backend/routes/auth.py` (совместно с участником 4)
-- `backend/utils/validators.py`
-- `backend/database.db`
-- `backend/config.py`
-
-**Функциональность:**
-- Создание базы данных SQLite
-- Реализация моделей SQLAlchemy:
-  - `users`
-  - `organizations`
-  - `pending_organizations`
-  - `categories`
-  - `cities`
-- API для фронтенда:
-  - `GET /api/get_organizations`
-  - `GET /api/get_cities`
-  - `POST /api/add_organization`
-  - `POST /api/update_organization`
-- Настройка сериализации JSON
-- Настройка CORS
-- Документирование API
-- Тестирование API в Postman
-
-### 4. Авторизация, роли и админка
-
-**Файлы:**
-- `frontend/admin.html`
-- `frontend/login.html`
-- `frontend/register.html`
-- `backend/routes/auth.py`
-- `backend/routes/admin.py`
-- `backend/utils/security.py`
-
-**Функциональность:**
-- Система авторизации (Flask-Login):
-  - Регистрация
-  - Вход
-  - Выход
-- Ограничение: один пользователь → одна НКО
-- Система ролей:
-  - Пользователь
-  - Администратор
-- Админ-панель:
-  - Просмотр заявок
-  - Одобрение/отклонение
-  - Редактирование НКО
-- API админки:
-  - `GET /api/admin/pending`
-  - `POST /api/admin/approve`
-  - `POST /api/admin/reject`
-  - `GET /api/admin/all`
-- Защита маршрутов
-- Интеграция админки с фронтендом через fetch
+| Метод | Путь | Описание |
+|---|---|---|
+| POST | `/api/auth/register` | регистрация пользователя |
+| POST | `/api/auth/login` | вход, выдаёт JWT |
+| GET  | `/api/auth/me` | текущий пользователь |
+| GET  | `/api/organizations/` | список одобренных НКО |
+| POST | `/api/organizations/` | предложить новую НКО (на модерацию) |
+| GET  | `/api/organizations/my` | НКО текущего пользователя |
+| GET  | `/api/admin/pending` | заявки на модерации (только админ) |
+| POST | `/api/admin/approve/<id>` | одобрить заявку |
+| POST | `/api/admin/reject/<id>` | отклонить заявку |
