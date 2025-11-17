@@ -132,19 +132,24 @@ main .card {
   white-space: nowrap;
 }
 
-/* лого — по центру первой трети контейнера (над сайдбаром) */
+/* лого — по центру первой трети контейнера (над сайдбаром);
+   height:auto + flex-центрирование, чтобы картинка росла симметрично
+   вверх/вниз от середины хедера, а не наезжала на низ базовой линией */
 .brand-first-third {
   position: absolute;
   top: 50%;
   left: 16.6667%;
   transform: translate(-50%, -50%);
+  height: auto;
+  display: flex;
+  align-items: center;
 }
 
-/* заголовок — по центру всего контейнера */
+/* заголовок — по центру main (колонка карты, вторые две трети) */
 .title-centered {
   position: absolute;
   top: 50%;
-  left: 50%;
+  left: 66.6667%;
   transform: translate(-50%, -50%);
 }
 
