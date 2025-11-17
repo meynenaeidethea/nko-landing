@@ -5,10 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Регистрация — Карта добрых дел</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body class="bg-light d-flex align-items-center justify-content-center" style="min-height:100vh;">
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Roboto+Slab:wght@100..900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
+      <img src="assets/logo_rosatom_hor_white.png" alt="logo" class="logo-img">
+      <span class="mapKind">Карта добрых дел</span>
+    </a>
+  </div>
+</nav>
+
+<div class="d-flex align-items-center justify-content-center" style="min-height:calc(100vh - 70px);">
   <div class="card p-4 shadow-sm" style="width:420px;">
     <h4 class="mb-3">Регистрация</h4>
     <input id="reg-email" class="form-control mb-2" placeholder="Email" type="email"/>
@@ -21,6 +36,7 @@
       <a href="login.html">У меня уже есть аккаунт</a>
     </div>
   </div>
+</div>
 
 <script>
 document.getElementById('reg-submit').onclick = async () => {
